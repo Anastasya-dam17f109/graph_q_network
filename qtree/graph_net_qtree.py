@@ -24,6 +24,159 @@ class Net(nn.Module):
         return (x1,x2,x3,x4)
 
 
+def gen_graph_direct(width, depth):
+    print(width % 2**depth)
+    if width % 2**depth==0:
+        buf_width=width // 2**depth
+        layers = []
+        idxes=[]
+        global_idx=0
+        for i in range(depth):
+            layers.append(np.zeros((buf_width,buf_width), dtype=int))
+            for k in range(buf_width*buf_width):
+                layers[i][k//buf_width, k%buf_width]=k+global_idx
+            for j in range(buf_width):
+                for k in range(buf_width):
+                    if i != 0:
+                        idxes.append((layers[i-1][j // 2, k // 2],layers[i][j,k]))
+                    if     buf_width > 1:
+                        if k==0 or k == buf_width-1:
+                            if k==0:
+                                if j ==0 or j == buf_width-1:
+                                    if j ==0:
+                                        idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j+1, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    else:
+                                        idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j -1, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                else:
+                                    idxes.append((layers[i][j,k],layers[i][j,k + 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+                            else:
+                                if j ==0 or j == buf_width-1:
+                                    if j ==0:
+                                        idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j+1, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    else:
+                                        idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j -1, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                else:
+                                    idxes.append((layers[i][j,k],layers[i][j,k - 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                        elif j == 0 or j == buf_width - 1:
+                            if j == 0:
+                                idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k]))
+                                idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                            else:
+                                idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+                        else:
+                            idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k]))
+                            idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+            global_idx += buf_width*buf_width
+            buf_width *= 2
+        print(layers)
+        print(idxes)
+
+def gen_graph_undirect(width, depth):
+    print(width % 2**depth)
+    if width % 2**depth==0:
+        buf_width=width // 2**depth
+        layers = []
+        idxes=[]
+        global_idx=0
+        for i in range(depth):
+            layers.append(np.zeros((buf_width,buf_width), dtype=int))
+            for k in range(buf_width*buf_width):
+                layers[i][k//buf_width, k%buf_width]=k+global_idx
+            for j in range(buf_width):
+                for k in range(buf_width):
+                    if i != 0:
+                        idxes.append((layers[i-1][j // 2, k // 2],layers[i][j,k]))
+                    if     buf_width > 1:
+                        if k==0 or k == buf_width-1:
+                            if k==0:
+                                if j ==0 or j == buf_width-1:
+                                    if j ==0:
+                                        idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j+1, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    else:
+                                        idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j -1, k + 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                else:
+                                    idxes.append((layers[i][j,k],layers[i][j,k + 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+                            else:
+                                if j ==0 or j == buf_width-1:
+                                    if j ==0:
+                                        idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j+1, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    else:
+                                        idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j -1, k - 1]))
+                                        idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                else:
+                                    idxes.append((layers[i][j,k],layers[i][j,k - 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k ]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                    idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                                    idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                        elif j == 0 or j == buf_width - 1:
+                            if j == 0:
+                                idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k]))
+                                idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                            else:
+                                idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                                idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                                idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+                        else:
+                            idxes.append((layers[i][j, k], layers[i][j, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k]))
+                            idxes.append((layers[i][j, k], layers[i][j, k + 1]))
+                            idxes.append((layers[i][j, k], layers[i][j + 1, k + 1]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k - 1]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k]))
+                            idxes.append((layers[i][j, k], layers[i][j - 1, k + 1]))
+            global_idx += buf_width*buf_width
+            buf_width *= 2
+        print(layers)
+        print(idxes)
+gen_graph(4, 2)
+
 net = Net()
 
         
